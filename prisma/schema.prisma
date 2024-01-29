@@ -7,19 +7,40 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  posts         Post[]
+  accounts      Account[]
+  sessions      Session[]
+  profile       Profile?  // Added this line to establish the relation
+}
+
+model Profile {
+  id     Int     @default(autoincrement()) @id
+  bio    String?
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
+}
 
 model Post {
-  id        Int     @id @default(autoincrement())
+  id        Int     @default(autoincrement()) @id
   title     String
   content   String?
   published Boolean @default(false)
   author    User?   @relation(fields: [authorId], references: [id])
-  authorId  String?
+  authorId  Int
 }
 
 model Account {
   id                 String    @id @default(cuid())
-  userId             String
+  userId             Int
   providerType       String
   providerId         String
   providerAccountId  String
@@ -36,26 +57,12 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String
+  userId       Int
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken  String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-}
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  posts         Post[]
-  accounts      Account[]
-  sessions      Session[]
 }
 
 model VerificationToken {
